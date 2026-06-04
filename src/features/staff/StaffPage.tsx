@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { StaffService } from '@/services/staffService';
@@ -9,18 +9,27 @@ import { StaffTable } from './components/StaffTable';
 import { InviteStaffModal } from './components/InviteStaffModal';
 
 export function StaffPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [showInvite, setShowInvite] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin) navigate('/');
-  }, [isAdmin, navigate]);
+    if (!loading && !isAdmin) navigate('/');
+  }, [isAdmin, loading, navigate]);
 
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ['staff'],
     queryFn: () => StaffService.list(),
+    enabled: !loading && isAdmin,
   });
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+      </div>
+    );
+  }
 
   if (!isAdmin) return null;
 

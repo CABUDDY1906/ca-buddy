@@ -1,10 +1,12 @@
 import { ChevronDown, LogOut, User, Settings } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 export function ProfileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { staff, user, signOut } = useAuth();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -16,6 +18,25 @@ export function ProfileMenu() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (err) {
+      console.error('Failed to sign out:', err);
+    }
+  };
+
+  const displayName = staff?.full_name || user?.email?.split('@')[0] || 'User';
+  const displayRole = staff?.role || 'Staff';
+  
+  // Get initials
+  const initials = displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -24,11 +45,11 @@ export function ProfileMenu() {
         className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-neutral-100"
       >
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-xs font-semibold text-white">
-          CA
+          {initials}
         </div>
         <div className="hidden text-left sm:block">
-          <p className="text-sm font-medium text-neutral-800">Admin</p>
-          <p className="text-xs text-neutral-500">CA Firm</p>
+          <p className="text-sm font-medium text-neutral-800">{displayName}</p>
+          <p className="text-xs text-neutral-500">{displayRole}</p>
         </div>
         <ChevronDown className={cn(
           'hidden h-4 w-4 text-neutral-400 transition-transform sm:block',
@@ -56,6 +77,7 @@ export function ProfileMenu() {
           <div className="my-1 border-t border-neutral-200" />
           <button
             type="button"
+            onClick={handleSignOut}
             className="flex w-full items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-neutral-50"
           >
             <LogOut className="h-4 w-4" />
