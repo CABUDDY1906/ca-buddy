@@ -8,26 +8,35 @@ export const StaffService = {
     if (error) throw error;
     return data;
   },
-  async getById(id: string): Promise<Staff | null> {
+  async getById(id: string): Promise<Staff> {
     const { data, error } = await supabase
       .from('staff').select('*').eq('id', id).single();
     if (error) throw error;
     return data;
   },
-  async create(input: StaffInput): Promise<Staff> {
+  async getCurrentStaff(): Promise<Staff | null> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
     const { data, error } = await supabase
-      .from('staff').insert(input).select().single();
+      .from('staff').select('*').eq('auth_user_id', user.id).single();
+    if (error) return null;
+    return data;
+  },
+  async invite(input: StaffInput): Promise<Staff> {
+    const { data, error } = await supabase
+      .from('staff').insert({ ...input, is_active: true }).select().single();
     if (error) throw error;
     return data;
   },
-  async update(id: string, input: Partial<StaffInput>): Promise<Staff> {
+  async updateRole(id: string, role: Staff['role']): Promise<Staff> {
     const { data, error } = await supabase
-      .from('staff').update(input).eq('id', id).select().single();
+      .from('staff').update({ role }).eq('id', id).select().single();
     if (error) throw error;
     return data;
   },
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase.from('staff').delete().eq('id', id);
+  async setActive(id: string, isActive: boolean): Promise<void> {
+    const { error } = await supabase
+      .from('staff').update({ is_active: isActive }).eq('id', id);
     if (error) throw error;
   },
 };

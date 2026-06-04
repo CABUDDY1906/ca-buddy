@@ -1,8 +1,10 @@
-// TODO: Implement firm context hook in Phase 1
-export const useCurrentFirm = () => {
-  return {
-    firmId: null,
-    firm: null,
-    loading: false,
-  };
-};
+import { useQuery } from '@tanstack/react-query';
+import { FirmsService } from '@/services/firmsService';
+
+export function useCurrentFirm() {
+  return useQuery({
+    queryKey: ['current-firm'],
+    queryFn: () => FirmsService.getCurrent(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
