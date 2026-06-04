@@ -53,7 +53,11 @@ export function EditClientModal({ client, onClose }: EditClientModalProps) {
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="px-6 py-4">
           {mutation.error && (
             <div className="mb-4 rounded-lg border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
-              {mutation.error instanceof Error ? mutation.error.message : 'Failed to update client'}
+              {mutation.error instanceof Error
+                ? mutation.error.message
+                : mutation.error && typeof mutation.error === 'object' && 'message' in mutation.error
+                  ? String((mutation.error as any).message)
+                  : 'Failed to update client'}
             </div>
           )}
 

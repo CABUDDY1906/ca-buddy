@@ -35,7 +35,11 @@ export function OnboardingPage() {
       await FirmsService.create(data, session.user.id);
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Setup failed');
+      console.error('Onboarding setup failed:', err);
+      const errMsg = err && typeof err === 'object' && 'message' in err
+        ? String((err as any).message)
+        : 'Setup failed';
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
