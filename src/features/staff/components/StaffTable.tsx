@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, MoreVertical, Trash2, Ban, CheckCircle, AlertTriangle } from 'lucide-react';
 import { StaffService } from '@/services/staffService';
@@ -15,7 +15,42 @@ export function StaffTable({ staff, loading }: StaffTableProps) {
   const queryClient = useQueryClient();
   const { staff: currentStaff } = useAuth();
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<'above' | 'below'>('below');
   const [deleteConfirmMember, setDeleteConfirmMember] = useState<Staff | null>(null);
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActiveMenuId(null);
+      }
+    }
+    if (activeMenuId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeMenuId]);
+
+  const handleMenuToggle = (memberId: string, buttonElement: HTMLButtonElement | null) => {
+    if (activeMenuId === memberId) {
+      setActiveMenuId(null);
+    } else {
+      if (buttonElement) {
+        const rect = buttonElement.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        // If there's less than 130px below the button, open above
+        if (spaceBelow < 130) {
+          setMenuPosition('above');
+        } else {
+          setMenuPosition('below');
+        }
+      }
+      setActiveMenuId(memberId);
+    }
+  };
 
   const roleMutation = useMutation({
     mutationFn: ({ id, role }: { id: string; role: Staff['role'] }) =>
@@ -68,12 +103,7 @@ export function StaffTable({ staff, loading }: StaffTableProps) {
 
   return (
     <>
-      {/* Dropdown Backdrop to close menu on click outside */}
-      {activeMenuId && (
-        <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setActiveMenuId(null)} />
-      )}
-
-      <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-card">
+      <div className="overflow-visible rounded-xl border border-neutral-200 bg-white shadow-card">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50">
@@ -120,45 +150,55 @@ export function StaffTable({ staff, loading }: StaffTableProps) {
                       </span>
                     </label>
                   </td>
-                  <td className="px-4 py-3 text-right relative">
+                  <td className="px-4 py-3 text-right relative overflow-visible">
                     {canManage && (
                       <div className="inline-block text-left">
                         <button
-                          onClick={() => setActiveMenuId(activeMenuId === member.id ? null : member.id)}
+                          onClick={(e) => handleMenuToggle(member.id, e.currentTarget)}
                           className="rounded p-1 hover:bg-neutral-100 text-neutral-500"
                         >
                           <MoreVertical className="h-4 w-4" />
                         </button>
 
                         {activeMenuId === member.id && (
-                          <div className="absolute right-4 mt-1 z-40 w-36 rounded-lg border border-neutral-200 bg-white py-1 shadow-dropdown">
+                          <div
+                            ref={menuRef}
+                            className={`absolute right-4 z-50 w-40 min-w-[160px] rounded-lg border border-neutral-200 bg-white py-1 shadow-lg ${
+                              menuPosition === 'above' ? 'bottom-full mb-1' : 'top-full mt-1'
+                            }`}
+                          >
                             <button
+                              type="button"
                               onClick={() => {
                                 activeMutation.mutate({ id: member.id, isActive: !member.is_active });
                                 setActiveMenuId(null);
                               }}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-neutral-700 hover:bg-neutral-50"
+                              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                             >
                               {member.is_active ? (
                                 <>
-                                  <Ban className="h-3.5 w-3.5 text-neutral-400" />
+                                  <Ban className="h-4 w-4 text-gray-400 shrink-0" />
                                   Deactivate
                                 </>
                               ) : (
                                 <>
-                                  <CheckCircle className="h-3.5 w-3.5 text-neutral-400" />
+                                  <CheckCircle className="h-4 w-4 text-gray-400 shrink-0" />
                                   Activate
                                 </>
                               )}
                             </button>
+                            
+                            <div className="border-t border-gray-100 my-1" />
+                            
                             <button
+                              type="button"
                               onClick={() => {
                                 setDeleteConfirmMember(member);
                                 setActiveMenuId(null);
                               }}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-danger hover:bg-danger/5"
+                              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-4 w-4 text-red-500 shrink-0" />
                               Delete
                             </button>
                           </div>
