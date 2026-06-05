@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { staffSchema, type StaffFormData } from '@/lib/validations';
 import { StaffService } from '@/services/staffService';
 import { STAFF_ROLES } from '@/lib/constants';
+import { useAuth } from '@/hooks/useAuth';
 
 interface InviteStaffModalProps {
   onClose: () => void;
@@ -14,10 +15,16 @@ interface InviteStaffModalProps {
 
 export function InviteStaffModal({ onClose }: InviteStaffModalProps) {
   const queryClient = useQueryClient();
+  const { staff: currentStaff } = useAuth();
+  
   const { register, handleSubmit, formState: { errors } } = useForm<StaffFormData>({
     resolver: zodResolver(staffSchema),
     defaultValues: { role: 'Article Assistant' },
   });
+
+  const allowedRoles = currentStaff?.role === 'Admin'
+    ? STAFF_ROLES
+    : STAFF_ROLES.filter((r) => r === 'Article Assistant' || r === 'Junior Auditor');
 
   const mutation = useMutation({
     mutationFn: (data: StaffFormData) => {
@@ -74,7 +81,7 @@ export function InviteStaffModal({ onClose }: InviteStaffModalProps) {
                 {...register('role')}
                 className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 outline-none focus:border-accent-500"
               >
-                {STAFF_ROLES.map((r) => (
+                {allowedRoles.map((r) => (
                   <option key={r} value={r}>{r}</option>
                 ))}
               </select>

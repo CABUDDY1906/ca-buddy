@@ -39,7 +39,7 @@ export function StaffPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-neutral-900">Staff</h1>
-        {currentStaff?.role === 'Admin' && (
+        {(currentStaff?.role === 'Admin' || currentStaff?.role === 'Manager') && (
           <Button onClick={() => setShowInvite(true)} className="bg-accent-500 text-white hover:bg-accent-600">
             <Plus className="mr-2 h-4 w-4" /> Add Staff
           </Button>
