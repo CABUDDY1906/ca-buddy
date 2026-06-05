@@ -105,5 +105,24 @@ export const StaffService = {
       .from('staff').update({ is_active: isActive }).eq('id', id);
     if (error) throw error;
   },
+  async deleteStaffMember(id: string): Promise<void> {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      throw new Error('Not authenticated');
+    }
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const response = await fetch(`${supabaseUrl}/functions/v1/delete-staff-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ staff_id: id }),
+    });
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || `Failed to delete staff member (status: ${response.status})`);
+    }
+  },
 };
 
