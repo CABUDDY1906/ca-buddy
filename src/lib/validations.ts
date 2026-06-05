@@ -41,6 +41,7 @@ export const staffSchema = z.object({
   email: z.string().email('Invalid email'),
   phone_number: z.string().optional(),
   role: z.enum(['Admin', 'Manager', 'Article Assistant', 'Junior Auditor']),
+  temp_password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 export const onboardingSchema = z.object({

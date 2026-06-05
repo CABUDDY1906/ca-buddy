@@ -80,6 +80,21 @@ export function InviteStaffModal({ onClose }: InviteStaffModalProps) {
               </select>
             </div>
 
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-neutral-700">Temporary Password *</label>
+              <Input
+                {...register('temp_password')}
+                type="password"
+                placeholder="••••••••"
+              />
+              {errors.temp_password && (
+                <p className="mt-1 text-xs text-danger">{errors.temp_password.message}</p>
+              )}
+              <p className="mt-1 text-xs text-neutral-450">
+                Share with the staff member via WhatsApp. They can change it after first login.
+              </p>
+            </div>
+
             <div className="flex items-start gap-2 rounded-lg bg-info/5 p-3">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" />
               <p className="text-xs text-info">

@@ -7,6 +7,7 @@ export interface Staff {
   phone_number?: string;
   role: 'Admin' | 'Manager' | 'Article Assistant' | 'Junior Auditor';
   is_active: boolean;
+  must_change_password?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -10,6 +10,7 @@ import { ClientsPage } from '@/features/clients/ClientsPage';
 import { ClientDetailPage } from '@/features/clients/ClientDetailPage';
 import { StaffPage } from '@/features/staff/StaffPage';
 import { ComingSoon } from '@/components/shared/ComingSoon';
+import { ChangePasswordPage } from '@/features/auth/ChangePasswordPage';
 
 export const router = createBrowserRouter([
   // Public routes
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
     path: '/',
     element: <AuthGuard />,
     children: [
+      { path: 'change-password', element: <ChangePasswordPage /> },
       {
         element: <AppShell />,
         children: [

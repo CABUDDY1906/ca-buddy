@@ -1,9 +1,10 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function AuthGuard() {
   const { session, staff, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -19,6 +20,18 @@ export function AuthGuard() {
 
   if (!staff) {
     return <Navigate to="/onboarding" replace />;
+  }
+
+  // If password change is required, redirect to /change-password unless already there.
+  if (staff.must_change_password) {
+    if (location.pathname !== '/change-password') {
+      return <Navigate to="/change-password" replace />;
+    }
+  } else {
+    // If password change is completed, don't allow access to /change-password.
+    if (location.pathname === '/change-password') {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <Outlet />;
